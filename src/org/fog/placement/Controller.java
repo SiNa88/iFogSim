@@ -1,5 +1,10 @@
 package org.fog.placement;
 
+/*import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;*/
+import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -39,7 +44,8 @@ public class Controller extends SimEntity{
 		this.applications = new HashMap<String, Application>();
 		setAppLaunchDelays(new HashMap<String, Integer>());
 		setAppModulePlacementPolicy(new HashMap<String, ModulePlacement>());
-		for(FogDevice fogDevice : fogDevices){
+		for(FogDevice fogDevice : fogDevices)
+		{
 			fogDevice.setControllerId(getId());
 		}
 		setFogDevices(fogDevices);
@@ -58,12 +64,18 @@ public class Controller extends SimEntity{
 	
 	private void connectWithLatencies(){
 		for(FogDevice fogDevice : getFogDevices()){
-			FogDevice parent = getFogDeviceById(fogDevice.getParentId());
+			FogDevice parent = getFogDeviceById(fogDevice.getParentId());///////////////////////////////////////////////////.getSiblingId());
 			if(parent == null)
 				continue;
 			double latency = fogDevice.getUplinkLatency();
 			parent.getChildToLatencyMap().put(fogDevice.getId(), latency);
 			parent.getChildrenIds().add(fogDevice.getId());
+			/*if(fogDevice.getName() == "d-1") {
+				fogDevice.setSiblingId(4);
+				FogDevice Dadaaash = getFogDeviceById(4);
+				Dadaaash.getSibToLatencyMap().put(fogDevice.getId(), latency);
+				//Dadaaash.getChildrenIds().add(fogDevice.getId());
+			}*/
 		}
 	}
 	
@@ -102,6 +114,7 @@ public class Controller extends SimEntity{
 			printTimeDetails();
 			printPowerDetails();
 			printCostDetails();
+			printCostOfDevices();
 			printNetworkUsageDetails();
 			System.exit(0);
 			break;
@@ -110,29 +123,67 @@ public class Controller extends SimEntity{
 	}
 	
 	private void printNetworkUsageDetails() {
-		System.out.println("Total network usage = "+NetworkUsageMonitor.getNetworkUsage()/Config.MAX_SIMULATION_TIME);		
+		//System.out.println(Config.MAX_SIMULATION_TIME);
+		//System.out.println("Total network traffic (KB) = "+round2(NetworkUsageMonitor.getNetworkUsage()/Config.MAX_SIMULATION_TIME/1000,10));
+		
+		//System.out.println("Total network traffic (MB) = "+round2((NetworkUsageMonitor.getNetworkUsage()/(Calendar.getInstance().getTimeInMillis() - TimeKeeper.getInstance().getSimulationStartTime()))/(1024*1024),10));
+		System.out.println("Total network traffic (MB) = "+round2((NetworkUsageMonitor.getNetworkUsage()),10));///(1024*1024),10));
+
+		for(Integer loopId : TimeKeeper.getInstance().getLoopIdToTupleIds().keySet()){
+			
+			//System.out.println(getStringForLoopId(loopId) + " ---> \n"+);
+			//System.out.println("Total network traffic (MB) = "+round2((NetworkUsageMonitor.getNetworkUsage()/(round2(TimeKeeper.getInstance().getLoopIdToCurrentAverage().get(loopId),4)))/(1024*1024),10));
+		}
 	}
 
-	private FogDevice getCloud(){
-		for(FogDevice dev : getFogDevices())
-			if(dev.getName().equals("cloud"))
-				return dev;
-		return null;
-	}
-	
 	private void printCostDetails(){
-		System.out.println("Cost of execution in cloud = "+getCloud().getTotalCost());
+		//System.out.println("Cost of execution in cloud = "+getCloud().getTotalCost());
+	}
+	private void printCostOfDevices(){
+		double sumofCost = 0;
+		for(FogDevice dev : getFogDevices()) {
+			//if(!dev.getName().equals("cloud"))
+			sumofCost+=round2(dev.getTotalCost(),6);
+			System.out.println("Cost of Fog device "+ dev.getName() + " = " +(round2(dev.getTotalCost(),6)));		
+			
+		}
+		System.out.println("Cost of Fog devices =          "+ round2(sumofCost,10));
 	}
 	
 	private void printPowerDetails() {
-		for(FogDevice fogDevice : getFogDevices()){
-			System.out.println(fogDevice.getName() + " : Energy Consumed = "+fogDevice.getEnergyConsumption());
+		long sumofEnergy = 0;
+		for(FogDevice fogDevice : getFogDevices())
+		{
+			//if ((!fogDevice.getName().equals("cloud")) || (!fogDevice.getName().equals("proxy-server")))
+			{
+				System.out.println(fogDevice.getName() + " : Energy Consumed = "+round2(fogDevice.getEnergyConsumption()/1000, 3));
+				sumofEnergy += fogDevice.getEnergyConsumption();
+			}
 		}
+		System.out.println("Sum of Energy is:  "+sumofEnergy/1000);
+	}
+
+	private static float round2(double number, int decimalPlace) {
+		BigDecimal bd = new BigDecimal(number);
+		bd = bd.setScale(decimalPlace, BigDecimal.ROUND_HALF_UP);
+		return bd.floatValue();
 	}
 
 	private String getStringForLoopId(int loopId){
 		for(String appId : getApplications().keySet()){
 			Application app = getApplications().get(appId);
+//			for(AppModule module : app.getModules()){
+//				//System.out.println(module.getId());
+//				Double startTime = TimeKeeper.getInstance().getEmitTimes().get(module.getId());
+//				Double endTime = TimeKeeper.getInstance().getEndTimes().get(module.getId());
+//				if(startTime == null || endTime == null) {
+//					//System.out.println(":(");
+//					break;
+//				}
+//				System.out.println("--------------------------------------");
+//				System.out.println(endTime-startTime);
+//				System.out.println("--------------------------------------");
+//			}
 			for(AppLoop loop : app.getLoops()){
 				if(loop.getLoopId() == loopId)
 					return loop.getModules().toString();
@@ -141,13 +192,29 @@ public class Controller extends SimEntity{
 		return null;
 	}
 	private void printTimeDetails() {
-		System.out.println("=========================================");
-		System.out.println("============== RESULTS ==================");
-		System.out.println("=========================================");
-		System.out.println("EXECUTION TIME : "+ (Calendar.getInstance().getTimeInMillis() - TimeKeeper.getInstance().getSimulationStartTime()));
-		System.out.println("=========================================");
-		System.out.println("APPLICATION LOOP DELAYS");
-		System.out.println("=========================================");
+		/*try(FileWriter fw = new FileWriter("mydata.csv", true); 
+			    BufferedWriter bw = new BufferedWriter(fw);
+			    PrintWriter out = new PrintWriter(bw))
+			{
+			    out.println();
+			} catch (IOException e) {
+			    return;//exception handling left as an exercise for the reader
+			}*/
+		System.out.println("==========================================");
+		System.out.println("================= RESULTS ================");
+		System.out.println("==========================================");
+		//System.out.println();
+		//getCloudletFileSize()/FogDevice.getUplinkBandwidth();
+		/*tuple.getCloudletFileSize()/getUplinkBandwidth()
+		 * +getUplinkLatency()
+		 */
+		System.out.println("==========================================");
+		System.out.println("Simulation Start Time =  "+TimeKeeper.getInstance().getSimulationStartTime());
+		System.out.println("Simulation Stop  Time =  "+Calendar.getInstance().getTimeInMillis());//TimeKeeper.getInstance().getCount()+
+		System.out.println("EXECUTION TIME (ms) : "+ (Calendar.getInstance().getTimeInMillis() - TimeKeeper.getInstance().getSimulationStartTime())+"\n");//round2(,4)
+		System.out.println("==========================================");
+		System.out.println("APPLICATION LOOP DELAY (Service time or Response time) :");
+		System.out.println("==========================================");
 		for(Integer loopId : TimeKeeper.getInstance().getLoopIdToTupleIds().keySet()){
 			/*double average = 0, count = 0;
 			for(int tupleId : TimeKeeper.getInstance().getLoopIdToTupleIds().get(loopId)){
@@ -159,17 +226,71 @@ public class Controller extends SimEntity{
 				count += 1;
 			}
 			System.out.println(getStringForLoopId(loopId) + " ---> "+(average/count));*/
-			System.out.println(getStringForLoopId(loopId) + " ---> "+TimeKeeper.getInstance().getLoopIdToCurrentAverage().get(loopId));
+			/** Writing to a file
+			 * try(FileWriter fw = new FileWriter("myfile.csv", true); 
+				    BufferedWriter bw = new BufferedWriter(fw);
+				    PrintWriter out = new PrintWriter(bw))
+				{
+				    out.println(TimeKeeper.getInstance().getLoopIdToTupleIds());
+				} catch (IOException e) {
+				    //exception handling left as an exercise for the reader
+				}
+			 **/
+			//System.out.println(TimeKeeper.getInstance().getLoopIdToTupleIds());
+			//System.out.println(getStringForLoopId(loopId));
+			//System.out.println(TimeKeeper.getInstance().getLoopIdToCurrentAverage().get(loopId));
+			System.out.println(getStringForLoopId(loopId) + " ---> \n"+round2(TimeKeeper.getInstance().getLoopIdToCurrentAverage().get(loopId),4));
+			//System.out.println(getStringForLoopId(loopId) + " ---> "+(TimeKeeper.getInstance().getLoopIdToCurrentAverage().get(loopId))+"\n");//round2,4
+			//System.out.println(loopId+" "+round2(TimeKeeper.getInstance().getLoopIdToCurrentAverage().get(loopId),4)+"\n");
 		}
-		System.out.println("=========================================");
-		System.out.println("TUPLE CPU EXECUTION DELAY");
-		System.out.println("=========================================");
-		
-		for(String tupleType : TimeKeeper.getInstance().getTupleTypeToAverageCpuTime().keySet()){
-			System.out.println(tupleType + " ---> "+TimeKeeper.getInstance().getTupleTypeToAverageCpuTime().get(tupleType));
+		//for(Integer loopId : TimeKeeper.getInstance().getLoopIdToTupleIds().keySet())
+		{
+			////////////////////////////System.out.println(TimeKeeper.getInstance().getLoopIdToCurrentNum().get(loopId)+ "\t\t"+ (round2(TimeKeeper.getInstance().getLoopIdToCurrentNum().get(loopId)/TimeKeeper.getInstance().getLoopIdToCurrentAverage().get(loopId),3)*1000));
+			//////System.out.println(TimeKeeper.getInstance().getCount()+"\n");
+			////System.out.println("==========================================");
+			////System.out.println("Current Loop Number is: ");
+			////System.out.println(getStringForLoopId(loopId) + " ---> "+TimeKeeper.getInstance().getLoopIdToCurrentNum().get(loopId));
+//			for (Integer tupleId : TimeKeeper.getInstance().getLoopIdToTupleIds().get(loopId))
+//			{
+//				Double startTime = 	TimeKeeper.getInstance().getEmitTimes().get(tupleId);
+//				Double endTime = 	TimeKeeper.getInstance().getEndTimes().get(tupleId);
+//				if(startTime == null || endTime == null) {
+//					System.out.println(":( ");
+//					break;
+//				}
+//				System.out.println("--------------------------------------");
+//				System.out.println(endTime-startTime);
+//				System.out.println("--------------------------------------");
+//			}
 		}
+		System.out.println("===========================================");
+		System.out.println("Number of satisfied requests");
+		System.out.println("===========================================");
+		for(Integer loopId : TimeKeeper.getInstance().getLoopIdToTupleIds().keySet())
+		{
+			//System.out.println(getStringForLoopId(loopId) + " ---> "+(round2((TimeKeeper.getInstance().getLoopIdToCurrentNum().get(loopId))/TimeKeeper.getInstance().getLoopIdToCurrentAverage().get(loopId),4)*1000)+"\n");//
+		}
+		System.out.println("===========================================");
+		System.out.println("===========================================");
+		System.out.println("Component CPU EXECUTION DELAY");
+		System.out.println("===========================================");
 		
-		System.out.println("=========================================");
+		for(String tupleType : TimeKeeper.getInstance().getTupleTypeToAverageCpuTime().keySet())
+		{
+			System.out.println(tupleType + " ---> "+round2(TimeKeeper.getInstance().getTupleTypeToAverageCpuTime().get(tupleType),4));
+		}
+		System.out.println("===========================================");
+		System.out.println("===========================================");
+		System.out.println("Component Sending DELAY");
+		System.out.println("===========================================");
+		
+		for(String tupleType : TimeKeeper.getInstance().getTupleTypeToAverageSendTime().keySet())
+		{
+			System.out.println(tupleType + " ---> "+round2(TimeKeeper.getInstance().getTupleTypeToAverageSendTime().get(tupleType),4));
+		}
+		System.out.println("===========================================");
+		System.out.println("===========================================");
+		
 	}
 
 	protected void manageResources(){
@@ -177,6 +298,20 @@ public class Controller extends SimEntity{
 	}
 	
 	private void processTupleFinished(SimEvent ev) {
+		//Tuple tuple = (Tuple)ev.getData();
+		System.out.println("==========================================");
+		System.out.println("==========================================");
+		System.out.println("==========================================");
+		System.out.println("==========================================");
+		System.out.println(CloudSim.clock());
+		/*for(String tupleType : TimeKeeper.getInstance().getTupleTypeToAverageSendTime().keySet())
+		{
+			System.out.println(tupleType + " ---> "+TimeKeeper.getInstance().getTupleTypeToAverageSendTime().get(tupleType));
+		}*/
+		System.out.println("==========================================");
+		System.out.println("==========================================");
+		System.out.println("==========================================");
+		System.out.println("==========================================");
 	}
 	
 	@Override
@@ -195,16 +330,22 @@ public class Controller extends SimEntity{
 		for(Actuator ac : actuators){
 			ac.setApp(getApplications().get(ac.getAppId()));
 		}
-		
-		for(AppEdge edge : application.getEdges()){
-			if(edge.getEdgeType() == AppEdge.ACTUATOR){
-				String moduleName = edge.getSource();
-				for(Actuator actuator : getActuators()){
-					if(actuator.getActuatorType().equalsIgnoreCase(edge.getDestination()))
-						application.getModuleByName(moduleName).subscribeActuator(actuator.getId(), edge.getTupleType());
+		;
+		//for(AppLoop loop : application.getLoops())
+		{
+			for(AppEdge edge : application.getEdges())
+			{
+				//if(edge.getEdgeType() == AppEdge.ACTUATOR)
+				{
+					String moduleName = edge.getSource();
+					//loop.getModules();
+					for(Actuator actuator : getActuators()){
+						if(actuator.getActuatorType().equalsIgnoreCase(edge.getDestination()))
+							application.getModuleByName(moduleName).subscribeActuator(actuator.getId(), edge.getTupleType());
+					}
 				}
-			}
-		}	
+			}	
+		}
 	}
 	
 	public void submitApplication(Application application, ModulePlacement modulePlacement){
@@ -218,7 +359,7 @@ public class Controller extends SimEntity{
 	}
 	
 	private void processAppSubmit(Application application){
-		System.out.println(CloudSim.clock()+" Submitted application "+ application.getAppId());
+		///////////System.out.println("At time: "+CloudSim.clock()+", application "+ application.getAppId()+" is submitted.");
 		FogUtils.appIdToGeoCoverageMap.put(application.getAppId(), application.getGeoCoverage());
 		getApplications().put(application.getAppId(), application);
 		
