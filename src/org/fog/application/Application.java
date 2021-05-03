@@ -54,19 +54,32 @@ public class Application {
 	/**
 	 * Adds an application module to the application.
 	 * @param moduleName
+	 * @param mips
 	 * @param ram
 	 */
-	public void addAppModule(String moduleName, int ram){
-		int mips = 1000;
-		long size = 10000;
-		long bw = 1000;
+	public void addAppModule(String moduleName,int mips,  /*int numberOfPe,*/ int ram /*host memory (MB)*/, long size ){
+		//int mips = 1000;
+		//long size = 10000; //MB // Amount of storage
+		long bw = 100;
 		String vmm = "Xen";
-		
+		/*if (moduleName == "client")
+		{
+			mips = 1000;
+			size = 10000;
+			bw = 1000;			
+		}
+		else if (moduleName == "concentration_calculator")
+		{
+			
+		}
+		else if (moduleName == "connector")
+		{
+			
+		}*/
 		AppModule module = new AppModule(FogUtils.generateEntityId(), moduleName, appId, userId, 
-				mips, ram, bw, size, vmm, new TupleScheduler(mips, 1), new HashMap<Pair<String, String>, SelectivityModel>());
+				mips, ram, bw, size, vmm, new TupleScheduler(mips, 1)/*new TupleScheduler(mips, numberOfPe)*/, new HashMap<Pair<String, String>, SelectivityModel>());
 		
-		getModules().add(module);
-		
+		getModules().add(module);		
 	}
 	
 	/**
@@ -74,14 +87,15 @@ public class Application {
 	 * @param source
 	 * @param destination
 	 * @param tupleCpuLength
+	 * @param tupleRamLength
 	 * @param tupleNwLength
 	 * @param tupleType
 	 * @param direction
 	 * @param edgeType
 	 */
 	public void addAppEdge(String source, String destination, double tupleCpuLength, 
-			double tupleNwLength, String tupleType, int direction, int edgeType){
-		AppEdge edge = new AppEdge(source, destination, tupleCpuLength, tupleNwLength, tupleType, direction, edgeType);
+			double tupleRamLength, double tupleNwLength, String tupleType, int direction, int edgeType){
+		AppEdge edge = new AppEdge(source, destination, tupleCpuLength, tupleRamLength, tupleNwLength, tupleType, direction, edgeType);
 		getEdges().add(edge);
 		getEdgeMap().put(edge.getTupleType(), edge);
 	}
@@ -90,6 +104,7 @@ public class Application {
 	 * Adds a periodic edge to the application model.
 	 * @param source
 	 * @param destination
+	 * @param periodicity
 	 * @param tupleCpuLength
 	 * @param tupleNwLength
 	 * @param tupleType
@@ -97,8 +112,8 @@ public class Application {
 	 * @param edgeType
 	 */
 	public void addAppEdge(String source, String destination, double periodicity, double tupleCpuLength, 
-			double tupleNwLength, String tupleType, int direction, int edgeType){
-		AppEdge edge = new AppEdge(source, destination, periodicity, tupleCpuLength, tupleNwLength, tupleType, direction, edgeType);
+			double tupleRamLength, double tupleNwLength, String tupleType, int direction, int edgeType){
+		AppEdge edge = new AppEdge(source, destination, periodicity, tupleCpuLength, tupleRamLength, tupleNwLength, tupleType, direction, edgeType);
 		getEdges().add(edge);
 		getEdgeMap().put(edge.getTupleType(), edge);
 	}
