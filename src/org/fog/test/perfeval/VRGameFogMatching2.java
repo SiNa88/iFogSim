@@ -142,14 +142,7 @@ public class VRGameFogMatching2 {
 				/**
 				 * RTR-RP
 				 */				
-				/*
-				 * moduleMapping_0.addModuleToDevice("transcoding", "tier-server2");
-				 * moduleMapping_0.addModuleToDevice("permanent_storing", "tier-server1");
-				 * moduleMapping_0.addModuleToDevice("detecting_classifying", "tier-server2");
-				 * moduleMapping_0.addModuleToDevice("high_quali_encod", "e-0-7");
-				 * moduleMapping_0.addModuleToDevice("lightCNN", "tier-server1");
-				 * moduleMapping_0.addModuleToDevice("packaging", "tier-server2");
-				 */
+				
 				  moduleMapping_0.addModuleToDevice("transcoding", "cloud");
 				  moduleMapping_0.addModuleToDevice("permanent_storing", "cloud");
 				  moduleMapping_0.addModuleToDevice("detecting_classifying", "tier-server2");
