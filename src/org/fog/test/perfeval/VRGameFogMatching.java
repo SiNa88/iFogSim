@@ -137,7 +137,7 @@ public class VRGameFogMatching {
 				moduleMapping_0.addModuleToDevice("packaging", 			"tier-server1");//"e-0-9");*/	
 				
 				/**
-				 * Olena Skarlat
+				 * Others
 				 */
 				/*moduleMapping_0.addModuleToDevice("permanent_storing", 			"cloud");
 				moduleMapping_0.addModuleToDevice("transcoding", 						"cloud");
@@ -155,10 +155,7 @@ public class VRGameFogMatching {
 //				moduleMapping_0.addModuleToDevice("lightCNN", 			"cloud");
 				moduleMapping_0.addModuleToDevice("high_quali_encod", 			"cloud");
 				moduleMapping_0.addModuleToDevice("packaging", 			"cloud");
-								
-				/**
-				 * Olena Skarlat
-				 */
+				
 					
 				
 				/**
