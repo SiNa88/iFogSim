@@ -44,9 +44,9 @@ public class CleanFromJson {
 			Application application = createApplication(appId, broker.getId());
 			application.setUserId(broker.getId());
 			
-			/*
+			/**
 			 * Creating the physical topology from specified JSON file
-			 */
+			 **/
 			PhysicalTopology physicalTopology = JsonToTopology.getPhysicalTopology(broker.getId(), appId, "topologies/routerTopology");
 						
 			Controller controller = new Controller("master-controller", physicalTopology.getFogDevices(), physicalTopology.getSensors(), 
@@ -72,9 +72,9 @@ public class CleanFromJson {
 	private static Application createApplication(String appId, int userId){
 		
 		Application application = Application.createApplication(appId, userId);
-		application.addAppModule("client", 10);
-		application.addAppModule("classifier", 10);
-		application.addAppModule("tuner", 10);
+		application.addAppModule("client", 1000, 10, 10000);
+		application.addAppModule("classifier", 1000, 10, 10000);
+		application.addAppModule("tuner", 1000, 10, 10000);
 		
 		application.addTupleMapping("client", "TEMP", "_SENSOR", new FractionalSelectivity(1.0));
 		application.addTupleMapping("client", "CLASSIFICATION", "ACTUATOR", new FractionalSelectivity(1.0));
@@ -82,12 +82,12 @@ public class CleanFromJson {
 		application.addTupleMapping("classifier", "_SENSOR", "HISTORY", new FractionalSelectivity(0.1));
 		application.addTupleMapping("tuner", "HISTORY", "TUNING_PARAMS", new FractionalSelectivity(1.0));
 	
-		application.addAppEdge("TEMP", "client", 1000, 100, "TEMP", Tuple.UP, AppEdge.SENSOR);
-		application.addAppEdge("client", "classifier", 8000, 100, "_SENSOR", Tuple.UP, AppEdge.MODULE);
-		application.addAppEdge("classifier", "tuner", 1000000, 100, "HISTORY", Tuple.UP, AppEdge.MODULE);
-		application.addAppEdge("classifier", "client", 1000, 100, "CLASSIFICATION", Tuple.DOWN, AppEdge.MODULE);
-		application.addAppEdge("tuner", "classifier", 1000, 100, "TUNING_PARAMS", Tuple.DOWN, AppEdge.MODULE);
-		application.addAppEdge("client", "MOTOR", 1000, 100, "ACTUATOR", Tuple.DOWN, AppEdge.ACTUATOR);
+		application.addAppEdge("TEMP", "client", 1000, 20, 100, "TEMP", Tuple.UP, AppEdge.SENSOR);
+		application.addAppEdge("client", "classifier", 8000, 20, 100, "_SENSOR", Tuple.UP, AppEdge.MODULE);
+		application.addAppEdge("classifier", "tuner", 1000000, 20, 100, "HISTORY", Tuple.UP, AppEdge.MODULE);
+		application.addAppEdge("classifier", "client", 1000, 20, 100, "CLASSIFICATION", Tuple.DOWN, AppEdge.MODULE);
+		application.addAppEdge("tuner", "classifier", 1000, 20, 100, "TUNING_PARAMS", Tuple.DOWN, AppEdge.MODULE);
+		application.addAppEdge("client", "MOTOR", 1000, 20, 100, "ACTUATOR", Tuple.DOWN, AppEdge.ACTUATOR);
 		
 		
 		final AppLoop loop1 = new AppLoop(new ArrayList<String>(){{add("TEMP");add("client");add("classifier");add("client");add("MOTOR");}});
