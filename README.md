@@ -14,7 +14,7 @@ You can find the main Java classes and the source codes of CODA and other three 
 https://github.com/SiNa88/iFogSim/tree/master/src/org/fog/test/perfeval
 
 ## Paper Citation:
-Narges Mehran, Dragi Kimovski and Radu Prodan. "A Two-Sided Matching Model for Data Stream Processing in the Cloud-Fog Continuum," 21st IEEE/ACM international Symposium on Cluster, Cloud, and Internet Computing (CCGrid2021), 2021.
+Narges Mehran, Dragi Kimovski and Radu Prodan. "A Two-Sided Matching Model for Data Stream Processing in the Cloud-Fog Continuum," 21st IEEE/ACM international Symposium on Cluster, Cloud, and Internet Computing (CCGrid2021), 2021, DOI: 10.1109/CCGrid51090.2021.00061
 	
 ## Contributors:
 	1.Narges Mehran (PhD Student, Alpen-Adria Universitat Klagenfurt, Austria)
