@@ -10,7 +10,7 @@ public class AppEdge {
 	public static final int SENSOR = 1; // App Edge originates from a sensor
 	public static final int ACTUATOR = 2; // App Edge leads to an actuator
 	public static final int MODULE = 3; // App Edge is between application modules
-	
+		
 	/**
 	 * Name of source application module
 	 */
@@ -23,6 +23,10 @@ public class AppEdge {
 	 * CPU length (in MIPS) of tuples carried by the application edge
 	 */
 	private double tupleCpuLength;
+	/**
+	 * Ram length (in bytes) of tuples carried by the application edge
+	 */
+	private double tupleRamLength;
 	/**
 	 * Network length (in bytes) of tuples carried by the application edge
 	 */
@@ -51,10 +55,11 @@ public class AppEdge {
 	}
 	
 	public AppEdge(String source, String destination, double tupleCpuLength, 
-			double tupleNwLength, String tupleType, int direction, int edgeType){
+			double tupleRamLength, double tupleNwLength, String tupleType, int direction, int edgeType){
 		setSource(source);
 		setDestination(destination);
 		setTupleCpuLength(tupleCpuLength);
+		setTupleRamLength(tupleRamLength);
 		setTupleNwLength(tupleNwLength);
 		setTupleType(tupleType);
 		setDirection(direction);
@@ -63,10 +68,11 @@ public class AppEdge {
 	}
 	
 	public AppEdge(String source, String destination, double periodicity, double tupleCpuLength, 
-			double tupleNwLength, String tupleType, int direction, int edgeType){
+			double tupleRamLength,double tupleNwLength, String tupleType, int direction, int edgeType){
 		setSource(source);
 		setDestination(destination);
 		setTupleCpuLength(tupleCpuLength);
+		setTupleRamLength(tupleRamLength);
 		setTupleNwLength(tupleNwLength);
 		setTupleType(tupleType);
 		setDirection(direction);
@@ -75,6 +81,7 @@ public class AppEdge {
 		setPeriodicity(periodicity);
 	}
 	
+
 	public String getSource() {
 		return source;
 	}
@@ -92,6 +99,12 @@ public class AppEdge {
 	}
 	public void setTupleCpuLength(double tupleCpuLength) {
 		this.tupleCpuLength = tupleCpuLength;
+	}
+	public double getTupleRamLength() {
+		return tupleRamLength;
+	}
+	public void setTupleRamLength(double tupleRamLength) {
+		this.tupleRamLength = tupleRamLength;
 	}
 	public double getTupleNwLength() {
 		return tupleNwLength;

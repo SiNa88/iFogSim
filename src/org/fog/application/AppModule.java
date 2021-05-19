@@ -51,14 +51,14 @@ public class AppModule extends PowerVm{
 			String vmm,
 			CloudletScheduler cloudletScheduler,
 			Map<Pair<String, String>, SelectivityModel> selectivityMap) {
-		super(id, userId, mips, 1, ram, bw, size, 1, vmm, cloudletScheduler, 300);
+		super(id, userId, mips, 4, ram, bw, size, 1, vmm, cloudletScheduler, 300);
 		setName(name);
 		setId(id);
 		setAppId(appId);
 		setUserId(userId);
 		setUid(getUid(userId, id));
 		setMips(mips);
-		setNumberOfPes(1);
+		setNumberOfPes(4);
 		setRam(ram);
 		setBw(bw);
 		setSize(size);
@@ -76,7 +76,7 @@ public class AppModule extends PowerVm{
 		setDownInstanceIdsMaps(new HashMap<String, List<Integer>>());
 	}
 	public AppModule(AppModule operator) {
-		super(FogUtils.generateEntityId(), operator.getUserId(), operator.getMips(), 1, operator.getRam(), operator.getBw(), operator.getSize(), 1, operator.getVmm(), new TupleScheduler(operator.getMips(), 1), operator.getSchedulingInterval());
+		super(FogUtils.generateEntityId(), operator.getUserId(), operator.getMips(), 4, operator.getRam(), operator.getBw(), operator.getSize(), 1, operator.getVmm(), new TupleScheduler(operator.getMips(), 1), operator.getSchedulingInterval());
 		setName(operator.getName());
 		setAppId(operator.getAppId());
 		setInMigration(false);
