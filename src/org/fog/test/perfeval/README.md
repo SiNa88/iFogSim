@@ -2,8 +2,10 @@
 Cloud-fOg to Data stream application mAtching
 
 ## Paper Citation:
-Narges Mehran, Dragi Kimovski and Radu Prodan. "A Two-Sided Matching Model for Data Stream Processing in the Cloud-Fog Continuum," 21st IEEE/ACM international Symposium on Cluster, Cloud, and Internet Computing (CCGrid2021), 2021.
-	
+Narges Mehran, Dragi Kimovski, and Radu Prodan. "A Two-Sided Matching Model for Data Stream Processing in the Cloud-Fog Continuum," 21st IEEE/ACM international Symposium on Cluster, Cloud, and Internet Computing (CCGrid2021), 2021.
+https://arxiv.org/abs/2105.07936
+
+
 ## Contributors:
 	1.Narges Mehran (PhD Student, Alpen-Adria Universitat Klagenfurt, Austria)
 	2.Dragi Kimovski (PostDoc, Alpen-Adria Universitat Klagenfurt, Austria)
@@ -11,14 +13,4 @@ Narges Mehran, Dragi Kimovski and Radu Prodan. "A Two-Sided Matching Model for D
 
 
 The following Java classes are the CODA and state-of-the-art models:
-
-VRGameFogMatching.java is the HEFT-OC model.
-
-
-VRGameFogMatching2.java is the RTR-RP model.
-
-
-VRGameFogMatching3.java is CODA model.
-
-
-VRGameFogMatching4.java is CP model.
+HEFT-OC, RTR-RP, CP models.
