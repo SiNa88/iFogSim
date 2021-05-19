@@ -5,7 +5,8 @@ Cloud-fOg to Data stream application mAtching
  Access from <A href="https://github.com/Cloudslab/iFogSimTutorials">https://github.com/Cloudslab/iFogSimTutorials</A>
  
 ## How to setup the project
-A video on how to setup an iFogSim-based project (the IDE does not matter).
+A video on how to setup an iFogSim-based project (the IDE does not matter):
+https://www.youtube.com/watch?v=QQ0N5VyC1Go
 
 ## Source codes
 You can find the main Java classes and the source codes of CODA and other three state-of-the-Art placement approaches in the following link:
