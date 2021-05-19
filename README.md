@@ -5,6 +5,9 @@ https://github.com/SiNa88/iFogSim/tree/master/src/org/fog/test/perfeval
 
 # iFogSim Tutorial Examples
  Access from <A href="https://github.com/Cloudslab/iFogSimTutorials">https://github.com/Cloudslab/iFogSimTutorials</A>
+# How to setup the project
+
+I watached this video and it helped to setup a project in Eclipse.
 
 ## Paper Citation:
 Narges Mehran, Dragi Kimovski and Radu Prodan. "A Two-Sided Matching Model for Data Stream Processing in the Cloud-Fog Continuum," 21st IEEE/ACM international Symposium on Cluster, Cloud, and Internet Computing (CCGrid2021), 2021.
