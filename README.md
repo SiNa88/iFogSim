@@ -10,7 +10,7 @@ A video on how to setup an iFogSim-based project (the IDE does not matter):
 https://www.youtube.com/watch?v=QQ0N5VyC1Go
 
 ## Source codes
-You can find the main Java classes and the source codes of CODA and other three state-of-the-Art placement approaches in the following link:
+You can find the main Java classes and the source codes of CODA and other three state-of-the-art placement approaches in the following link:
 https://github.com/SiNa88/iFogSim/tree/master/src/org/fog/test/perfeval
 
 ## Paper Citation:
