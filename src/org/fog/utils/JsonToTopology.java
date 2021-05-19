@@ -201,7 +201,7 @@ public class JsonToTopology {
 		FogDevice fogdevice = null;
 		try {
 			fogdevice = new FogDevice(nodeName, characteristics, 
-					new AppModuleAllocationPolicy(hostList), storageList, 10, upBw, downBw, 0, ratePerMips);
+					new AppModuleAllocationPolicy(hostList), storageList, 10, upBw, downBw, 0, ratePerMips,costPerBw,costPerBw,costPerBw,costPerBw);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
