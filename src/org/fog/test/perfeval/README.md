@@ -12,5 +12,4 @@ https://arxiv.org/abs/2105.07936
 	Contact: narges(at)itec.aau.at ; dragi.kimovski(at)aau.at
 
 
-The following Java classes are the CODA and state-of-the-art models:
-HEFT-OC, RTR-RP, CP models.
+The extended Java classes are the CODA and state-of-the-art models: such as HEFT-OC, RTR-RP, CP.
