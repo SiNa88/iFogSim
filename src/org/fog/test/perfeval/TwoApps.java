@@ -1,5 +1,6 @@
 package org.fog.test.perfeval;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.LinkedList;
@@ -51,7 +52,16 @@ public class TwoApps {
 	//static double EEG_TRANSMISSION_TIME = 10;
 	
 	public static void main(String[] args) {
-
+		File file = new File("mydata.csv");
+        
+        if(file.delete())
+        {
+            System.out.println("File deleted successfully");
+        }
+        else
+        {
+            System.out.println("Failed to delete the file");
+        }
 		Log.printLine("Starting TwoApps...");
 
 		try {
@@ -98,7 +108,22 @@ public class TwoApps {
 			
 			controller.submitApplication(application0, new ModulePlacementMapping(fogDevices, application0, moduleMapping_0));
 			controller.submitApplication(application1, 1000, new ModulePlacementMapping(fogDevices, application1, moduleMapping_1));
-
+			System.out.println(fogDevices.size());
+			for(int index = 0 ; index < fogDevices.size();index++) 
+			{
+				
+				System.out.println(fogDevices.get(index).getName()+"   "+fogDevices.get(index).getId());
+				
+				if (index+1 != fogDevices.size()) 
+				{
+					fogDevices.get(index).setParentId(index+1);
+					fogDevices.get(index+1).setParentId(index);
+					System.out.println(index);
+				}
+				
+			}
+			System.out.println();
+			
 			TimeKeeper.getInstance().setSimulationStartTime(Calendar.getInstance().getTimeInMillis());
 
 			CloudSim.startSimulation();
@@ -248,7 +273,7 @@ public class TwoApps {
 		FogDevice fogdevice = null;
 		try {
 			fogdevice = new FogDevice(nodeName, characteristics, 
-					new AppModuleAllocationPolicy(hostList), storageList, 10, upBw, downBw, 0, ratePerMips);
+					new AppModuleAllocationPolicy(hostList), storageList, 10, upBw, downBw, 0, ratePerMips, cost, costPerMem, costPerStorage, costPerBw);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -271,23 +296,23 @@ public class TwoApps {
 		/*
 		 * Adding modules (vertices) to the application model (directed graph)
 		 */
-		application.addAppModule("client", 10); // adding module Client to the application model
-		application.addAppModule("concentration_calculator", 10); // adding module Concentration Calculator to the application model
-		application.addAppModule("connector", 10); // adding module Connector to the application model
+		application.addAppModule("client", 2000, 10, 10000); // adding module Client to the application model
+		application.addAppModule("concentration_calculator", 2000, 10, 10000); // adding module Concentration Calculator to the application model
+		application.addAppModule("connector", 2000, 10, 10000); // adding module Connector to the application model
 		
 		/*
 		 * Connecting the application modules (vertices) in the application model (directed graph) with edges
 		 */
 		if(EEG_TRANSMISSION_TIME==10)
-			application.addAppEdge("EEG", "client", 2000, 500, "EEG", Tuple.UP, AppEdge.SENSOR); // adding edge from EEG (sensor) to Client module carrying tuples of type EEG
+			application.addAppEdge("EEG", "client", 2000, 20, 500, "EEG", Tuple.UP, AppEdge.SENSOR); // adding edge from EEG (sensor) to Client module carrying tuples of type EEG
 		else
-			application.addAppEdge("EEG", "client", 3000, 500, "EEG", Tuple.UP, AppEdge.SENSOR);
-		application.addAppEdge("client", "concentration_calculator", 3500, 500, "_SENSOR", Tuple.UP, AppEdge.MODULE); // adding edge from Client to Concentration Calculator module carrying tuples of type _SENSOR
-		application.addAppEdge("concentration_calculator", "connector", 100, 1000, 1000, "PLAYER_GAME_STATE", Tuple.UP, AppEdge.MODULE); // adding periodic edge (period=1000ms) from Concentration Calculator to Connector module carrying tuples of type PLAYER_GAME_STATE
-		application.addAppEdge("concentration_calculator", "client", 14, 500, "CONCENTRATION", Tuple.DOWN, AppEdge.MODULE);  // adding edge from Concentration Calculator to Client module carrying tuples of type CONCENTRATION
-		application.addAppEdge("connector", "client", 100, 28, 1000, "GLOBAL_GAME_STATE", Tuple.DOWN, AppEdge.MODULE); // adding periodic edge (period=1000ms) from Connector to Client module carrying tuples of type GLOBAL_GAME_STATE
-		application.addAppEdge("client", "DISPLAY", 1000, 500, "SELF_STATE_UPDATE", Tuple.DOWN, AppEdge.ACTUATOR);  // adding edge from Client module to Display (actuator) carrying tuples of type SELF_STATE_UPDATE
-		application.addAppEdge("client", "DISPLAY", 1000, 500, "GLOBAL_STATE_UPDATE", Tuple.DOWN, AppEdge.ACTUATOR);  // adding edge from Client module to Display (actuator) carrying tuples of type GLOBAL_STATE_UPDATE
+			application.addAppEdge("EEG", "client", 3000, 20, 500, "EEG", Tuple.UP, AppEdge.SENSOR);
+		application.addAppEdge("client", "concentration_calculator", 3500, 20, 500, "_SENSOR", Tuple.UP, AppEdge.MODULE); // adding edge from Client to Concentration Calculator module carrying tuples of type _SENSOR
+		application.addAppEdge("concentration_calculator", "connector", 100, 1000, 20, 1000, "PLAYER_GAME_STATE", Tuple.UP, AppEdge.MODULE); // adding periodic edge (period=1000ms) from Concentration Calculator to Connector module carrying tuples of type PLAYER_GAME_STATE
+		application.addAppEdge("concentration_calculator", "client", 14, 20, 500, "CONCENTRATION", Tuple.DOWN, AppEdge.MODULE);  // adding edge from Concentration Calculator to Client module carrying tuples of type CONCENTRATION
+		application.addAppEdge("connector", "client", 100, 28, 20, 1000, "GLOBAL_GAME_STATE", Tuple.DOWN, AppEdge.MODULE); // adding periodic edge (period=1000ms) from Connector to Client module carrying tuples of type GLOBAL_GAME_STATE
+		application.addAppEdge("client", "DISPLAY", 1000, 20, 500, "SELF_STATE_UPDATE", Tuple.DOWN, AppEdge.ACTUATOR);  // adding edge from Client module to Display (actuator) carrying tuples of type SELF_STATE_UPDATE
+		application.addAppEdge("client", "DISPLAY", 1000, 20, 500, "GLOBAL_STATE_UPDATE", Tuple.DOWN, AppEdge.ACTUATOR);  // adding edge from Client module to Display (actuator) carrying tuples of type GLOBAL_STATE_UPDATE
 		
 		/*
 		 * Defining the input-output relationships (represented by selectivity) of the application modules. 
@@ -316,23 +341,23 @@ public class TwoApps {
 		/*
 		 * Adding modules (vertices) to the application model (directed graph)
 		 */
-		application.addAppModule("client_1", 10); // adding module Client to the application model
-		application.addAppModule("concentration_calculator_1", 10); // adding module Concentration Calculator to the application model
-		application.addAppModule("connector_1", 10); // adding module Connector to the application model
+		application.addAppModule("client_1", 2000, 10, 10000); // adding module Client to the application model
+		application.addAppModule("concentration_calculator_1", 2000, 10, 10000); // adding module Concentration Calculator to the application model
+		application.addAppModule("connector_1", 2000, 10, 10000); // adding module Connector to the application model
 		
 		/*
 		 * Connecting the application modules (vertices) in the application model (directed graph) with edges
 		 */
 		if(EEG_TRANSMISSION_TIME==10)
-			application.addAppEdge("EEG_1", "client_1", 2000, 500, "EEG_1", Tuple.UP, AppEdge.SENSOR); // adding edge from EEG (sensor) to Client module carrying tuples of type EEG
+			application.addAppEdge("EEG_1", "client_1", 2000, 20, 500, "EEG_1", Tuple.UP, AppEdge.SENSOR); // adding edge from EEG (sensor) to Client module carrying tuples of type EEG
 		else
-			application.addAppEdge("EEG_1", "client_1", 3000, 500, "EEG_1", Tuple.UP, AppEdge.SENSOR);
-		application.addAppEdge("client_1", "concentration_calculator_1", 3500, 500, "_SENSOR_1", Tuple.UP, AppEdge.MODULE); // adding edge from Client to Concentration Calculator module carrying tuples of type _SENSOR
+			application.addAppEdge("EEG_1", "client_1", 3000, 20, 500, "EEG_1", Tuple.UP, AppEdge.SENSOR);
+		application.addAppEdge("client_1", "concentration_calculator_1", 3500, 20, 500, "_SENSOR_1", Tuple.UP, AppEdge.MODULE); // adding edge from Client to Concentration Calculator module carrying tuples of type _SENSOR
 		application.addAppEdge("concentration_calculator_1", "connector_1", 100, 1000, 1000, "PLAYER_GAME_STATE_1", Tuple.UP, AppEdge.MODULE); // adding periodic edge (period=1000ms) from Concentration Calculator to Connector module carrying tuples of type PLAYER_GAME_STATE
-		application.addAppEdge("concentration_calculator_1", "client_1", 14, 500, "CONCENTRATION_1", Tuple.DOWN, AppEdge.MODULE);  // adding edge from Concentration Calculator to Client module carrying tuples of type CONCENTRATION
-		application.addAppEdge("connector_1", "client_1", 100, 28, 1000, "GLOBAL_GAME_STATE_1", Tuple.DOWN, AppEdge.MODULE); // adding periodic edge (period=1000ms) from Connector to Client module carrying tuples of type GLOBAL_GAME_STATE
-		application.addAppEdge("client_1", "DISPLAY_1", 1000, 500, "SELF_STATE_UPDATE_1", Tuple.DOWN, AppEdge.ACTUATOR);  // adding edge from Client module to Display (actuator) carrying tuples of type SELF_STATE_UPDATE
-		application.addAppEdge("client_1", "DISPLAY_1", 1000, 500, "GLOBAL_STATE_UPDATE_1", Tuple.DOWN, AppEdge.ACTUATOR);  // adding edge from Client module to Display (actuator) carrying tuples of type GLOBAL_STATE_UPDATE
+		application.addAppEdge("concentration_calculator_1", "client_1", 14, 20, 500, "CONCENTRATION_1", Tuple.DOWN, AppEdge.MODULE);  // adding edge from Concentration Calculator to Client module carrying tuples of type CONCENTRATION
+		application.addAppEdge("connector_1", "client_1", 100, 28, 20, 1000, "GLOBAL_GAME_STATE_1", Tuple.DOWN, AppEdge.MODULE); // adding periodic edge (period=1000ms) from Connector to Client module carrying tuples of type GLOBAL_GAME_STATE
+		application.addAppEdge("client_1", "DISPLAY_1", 1000, 20, 500, "SELF_STATE_UPDATE_1", Tuple.DOWN, AppEdge.ACTUATOR);  // adding edge from Client module to Display (actuator) carrying tuples of type SELF_STATE_UPDATE
+		application.addAppEdge("client_1", "DISPLAY_1", 1000, 20, 500, "GLOBAL_STATE_UPDATE_1", Tuple.DOWN, AppEdge.ACTUATOR);  // adding edge from Client module to Display (actuator) carrying tuples of type GLOBAL_STATE_UPDATE
 		
 		/*
 		 * Defining the input-output relationships (represented by selectivity) of the application modules. 

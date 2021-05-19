@@ -50,7 +50,16 @@ public class DCNSFog {
 	private static boolean CLOUD = false;
 	
 	public static void main(String[] args) {
-
+		/*File file = new File("mydata.csv");
+        
+        if(file.delete())
+        {
+            System.out.println("File deleted successfully");
+        }
+        else
+        {
+            System.out.println("Failed to delete the file");
+        }*/
 		Log.printLine("Starting DCNS...");
 
 		try {
@@ -73,21 +82,27 @@ public class DCNSFog {
 			Controller controller = null;
 			
 			ModuleMapping moduleMapping = ModuleMapping.createModuleMapping(); // initializing a module mapping
-			for(FogDevice device : fogDevices){
+			/*for(FogDevice device : fogDevices){
 				if(device.getName().startsWith("m")){ // names of all Smart Cameras start with 'm' 
 					moduleMapping.addModuleToDevice("motion_detector", device.getName());  // fixing 1 instance of the Motion Detector module to each Smart Camera
 				}
-			}
-			moduleMapping.addModuleToDevice("user_interface", "cloud"); // fixing instances of User Interface module in the Cloud
-			if(CLOUD){
+			}*/	
+
+			moduleMapping.addModuleToDevice("motion_detector", "m-0-0");
+			moduleMapping.addModuleToDevice("object_detector", "d-0");
+			moduleMapping.addModuleToDevice("object_tracker", "proxy-server"); // fixing instances of  module in the proxy-server
+			moduleMapping.addModuleToDevice("user_interface", "cloud");
+
+			//moduleMapping.addModuleToDevice("user_interface", "proxy-server"); // fixing instances of User Interface module in the Cloud
+			/*if(CLOUD){
 				// if the mode of deployment is cloud-based
 				moduleMapping.addModuleToDevice("object_detector", "cloud"); // placing all instances of Object Detector module in the Cloud
 				moduleMapping.addModuleToDevice("object_tracker", "cloud"); // placing all instances of Object Tracker module in the Cloud
-			}
+			}*/
 			
 			controller = new Controller("master-controller", fogDevices, sensors, 
 					actuators);
-			
+			////////////////////////Submission of Applications and Placements to Nodes!/////////////////////////////// 
 			controller.submitApplication(application, 
 					(CLOUD)?(new ModulePlacementMapping(fogDevices, application, moduleMapping))
 							:(new ModulePlacementEdgewards(fogDevices, sensors, actuators, application, moduleMapping)));
@@ -140,7 +155,7 @@ public class DCNSFog {
 	private static FogDevice addCamera(String id, int userId, String appId, int parentId){
 		FogDevice camera = createFogDevice("m-"+id, 500, 1000, 10000, 10000, 3, 0, 87.53, 82.44);
 		camera.setParentId(parentId);
-		Sensor sensor = new Sensor("s-"+id, "CAMERA", userId, appId, new DeterministicDistribution(5)); // inter-transmission time of camera (sensor) follows a deterministic distribution
+		Sensor sensor = new Sensor("s-"+id, "CAMERA", userId, appId, new DeterministicDistribution(500)); // inter-transmission time of camera (sensor) follows a deterministic distribution
 		sensors.add(sensor);
 		Actuator ptz = new Actuator("ptz-"+id, userId, appId, "PTZ_CONTROL");
 		actuators.add(ptz);
@@ -173,8 +188,8 @@ public class DCNSFog {
 		peList.add(new Pe(0, new PeProvisionerOverbooking(mips))); // need to store Pe id and MIPS Rating
 
 		int hostId = FogUtils.generateEntityId();
-		long storage = 1000000; // host storage
-		int bw = 10000;
+		long storage = 10000; // host storage
+		int bw = 10000; //Mbits per seconds
 
 		PowerHost host = new PowerHost(
 				hostId,
@@ -188,27 +203,47 @@ public class DCNSFog {
 
 		List<Host> hostList = new ArrayList<Host>();
 		hostList.add(host);
+		
+		System.out.println(nodeName+"    mips: "+(mips)+"  ram: "+ (ram) +"  storage: "+storage+"  upBw: "+(bw) +"  busyPower: "+busyPower+"  idlePower: "+(idlePower));
 
+		
 		String arch = "x86"; // system architecture
 		String os = "Linux"; // operating system
 		String vmm = "Xen";
 		double time_zone = 10.0; // time zone this resource located
-		double cost = 3.0; // the cost of using processing in this resource
+		double costPerSec = 3.0; // the cost of using processing in this resource
 		double costPerMem = 0.05; // the cost of using memory in this resource
-		double costPerStorage = 0.001; // the cost of using storage in this
-										// resource
+		double costPerStorage = 0.001; // the cost of using storage in this resource
 		double costPerBw = 0.0; // the cost of using bw in this resource
 		LinkedList<Storage> storageList = new LinkedList<Storage>(); // we are not adding SAN
 													// devices by now
 
 		FogDeviceCharacteristics characteristics = new FogDeviceCharacteristics(
-				arch, os, vmm, host, time_zone, cost, costPerMem,
+				arch, os, vmm, host, time_zone, costPerSec, costPerMem,
 				costPerStorage, costPerBw);
+		/*
+		 * Parameters:
+				architecture the architecture of a resource
+				os the operating system used
+				vmm the virtual machine monitor used
+				hostList list of machines in a resource
+				timeZone local time zone of a user that owns this reservation. Time zone should be of range [GMT-12 ... GMT+13]
+				costPerSec the cost per sec to use this resource
+				costPerMem the cost to use memory in this resource
+				costPerStorage the cost to use storage in this resource
+				costPerBw the cost per bw
+		 * 
+		 */
 
 		FogDevice fogdevice = null;
 		try {
 			fogdevice = new FogDevice(nodeName, characteristics, 
-					new AppModuleAllocationPolicy(hostList), storageList, 10, upBw, downBw, 0, ratePerMips);
+					new AppModuleAllocationPolicy(hostList), storageList, 10, upBw, downBw, 0, ratePerMips, costPerSec, costPerMem, costPerStorage, costPerBw);
+			/*
+			 * org.fog.entities.FogDevice.FogDevice(String name, FogDeviceCharacteristics characteristics, 
+			 * VmAllocationPolicy vmAllocationPolicy, List<Storage> storageList, double schedulingInterval, 
+			 * double uplinkBandwidth, double downlinkBandwidth, double uplinkLatency, double ratePerMips)
+			 */
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -230,19 +265,19 @@ public class DCNSFog {
 		/*
 		 * Adding modules (vertices) to the application model (directed graph)
 		 */
-		application.addAppModule("object_detector", 10);
-		application.addAppModule("motion_detector", 10);
-		application.addAppModule("object_tracker", 10);
-		application.addAppModule("user_interface", 10);
+		application.addAppModule("object_detector", 10, 50,100);
+		application.addAppModule("motion_detector", 10, 50,100);
+		application.addAppModule("object_tracker", 10, 50,100);
+		application.addAppModule("user_interface", 10, 50,100);
 		
 		/*
 		 * Connecting the application modules (vertices) in the application model (directed graph) with edges
 		 */
-		application.addAppEdge("CAMERA", "motion_detector", 1000, 20000, "CAMERA", Tuple.UP, AppEdge.SENSOR); // adding edge from CAMERA (sensor) to Motion Detector module carrying tuples of type CAMERA
-		application.addAppEdge("motion_detector", "object_detector", 2000, 2000, "MOTION_VIDEO_STREAM", Tuple.UP, AppEdge.MODULE); // adding edge from Motion Detector to Object Detector module carrying tuples of type MOTION_VIDEO_STREAM
-		application.addAppEdge("object_detector", "user_interface", 500, 2000, "DETECTED_OBJECT", Tuple.UP, AppEdge.MODULE); // adding edge from Object Detector to User Interface module carrying tuples of type DETECTED_OBJECT
-		application.addAppEdge("object_detector", "object_tracker", 1000, 100, "OBJECT_LOCATION", Tuple.UP, AppEdge.MODULE); // adding edge from Object Detector to Object Tracker module carrying tuples of type OBJECT_LOCATION
-		application.addAppEdge("object_tracker", "PTZ_CONTROL", 100, 28, 100, "PTZ_PARAMS", Tuple.DOWN, AppEdge.ACTUATOR); // adding edge from Object Tracker to PTZ CONTROL (actuator) carrying tuples of type PTZ_PARAMS
+		application.addAppEdge("CAMERA", "motion_detector", 10, 20, 100, "CAMERA", Tuple.UP, AppEdge.SENSOR); // adding edge from CAMERA (sensor) to Motion Detector module carrying tuples of type CAMERA
+		application.addAppEdge("motion_detector", "object_detector", 20, 20, 100, "MOTION_VIDEO_STREAM", Tuple.UP, AppEdge.MODULE); // adding edge from Motion Detector to Object Detector module carrying tuples of type MOTION_VIDEO_STREAM
+		application.addAppEdge("object_detector", "user_interface", 50, 20, 100, "DETECTED_OBJECT", Tuple.UP, AppEdge.MODULE); // adding edge from Object Detector to User Interface module carrying tuples of type DETECTED_OBJECT
+		application.addAppEdge("object_detector", "object_tracker", 10, 10, 100, "OBJECT_LOCATION", Tuple.UP, AppEdge.MODULE); // adding edge from Object Detector to Object Tracker module carrying tuples of type OBJECT_LOCATION
+		application.addAppEdge("object_tracker", "PTZ_CONTROL", 10, 28, 10, 100, "PTZ_PARAMS", Tuple.DOWN, AppEdge.ACTUATOR); // adding edge from Object Tracker to PTZ CONTROL (actuator) carrying tuples of type PTZ_PARAMS
 		
 		/*
 		 * Defining the input-output relationships (represented by selectivity) of the application modules. 

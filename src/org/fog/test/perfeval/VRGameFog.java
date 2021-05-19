@@ -1,5 +1,6 @@
 package org.fog.test.perfeval;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.LinkedList;
@@ -47,13 +48,23 @@ public class VRGameFog {
 	
 	static boolean CLOUD = false;
 	
-	static int numOfDepts = 4;
-	static int numOfMobilesPerDept = 6;
-	static double EEG_TRANSMISSION_TIME = 5.1;
+	static int numOfDepts = 1;
+	static int numOfMobilesPerDept = 2;
+	static double EEG_TRANSMISSION_TIME = 100.1;
 	//static double EEG_TRANSMISSION_TIME = 10;
 	
-	public static void main(String[] args) {
-
+	public static void main(String[] args) 
+	{
+		File file = new File("mydata-000.csv");
+        
+        if(file.delete())
+        {
+            System.out.println("File deleted successfully");
+        }
+        else
+        {
+            System.out.println("Failed to delete the file");
+        }
 		Log.printLine("Starting VRGame...");
 
 		try {
@@ -78,8 +89,7 @@ public class VRGameFog {
 			if(CLOUD){
 				// if the mode of deployment is cloud-based
 				/*moduleMapping.addModuleToDevice("connector", "cloud", numOfDepts*numOfMobilesPerDept); // fixing all instances of the Connector module to the Cloud
-				moduleMapping.addModuleToDevice("concentration_calculator", "cloud", numOfDepts*numOfMobilesPerDept); // fixing all instances of the Concentration Calculator module to the Cloud
-*/				moduleMapping.addModuleToDevice("connector", "cloud"); // fixing all instances of the Connector module to the Cloud
+				moduleMapping.addModuleToDevice("concentration_calculator", "cloud", numOfDepts*numOfMobilesPerDept); // fixing all instances of the Concentration Calculator module to the Cloud*/				moduleMapping.addModuleToDevice("connector", "cloud"); // fixing all instances of the Connector module to the Cloud
 				moduleMapping.addModuleToDevice("concentration_calculator", "cloud"); // fixing all instances of the Concentration Calculator module to the Cloud
 				for(FogDevice device : fogDevices){
 					if(device.getName().startsWith("m")){
@@ -88,7 +98,7 @@ public class VRGameFog {
 					}
 				}
 			}else{
-				// if the mode of deployment is cloud-based
+				// if the mode of deployment is not cloud-based
 				//moduleMapping.addModuleToDevice("connector", "cloud", numOfDepts*numOfMobilesPerDept); // fixing all instances of the Connector module to the Cloud
 				moduleMapping.addModuleToDevice("connector", "cloud"); // fixing all instances of the Connector module to the Cloud
 				// rest of the modules will be placed by the Edge-ward placement policy
@@ -104,6 +114,7 @@ public class VRGameFog {
 
 			TimeKeeper.getInstance().setSimulationStartTime(Calendar.getInstance().getTimeInMillis());
 
+			
 			CloudSim.startSimulation();
 
 			CloudSim.stopSimulation();
@@ -163,7 +174,6 @@ public class VRGameFog {
 		display.setLatency(1.0);  // latency of connection between Display actuator and the parent Smartphone is 1 ms
 		return mobile;
 	}
-	
 	/**
 	 * Creates a vanilla fog device
 	 * @param nodeName name of the device to be used in simulation
@@ -206,7 +216,7 @@ public class VRGameFog {
 		String os = "Linux"; // operating system
 		String vmm = "Xen";
 		double time_zone = 10.0; // time zone this resource located
-		double cost = 3.0; // the cost of using processing in this resource
+		double costPerSec = 3.0; // the cost of using processing in this resource
 		double costPerMem = 0.05; // the cost of using memory in this resource
 		double costPerStorage = 0.001; // the cost of using storage in this
 										// resource
@@ -215,13 +225,13 @@ public class VRGameFog {
 													// devices by now
 
 		FogDeviceCharacteristics characteristics = new FogDeviceCharacteristics(
-				arch, os, vmm, host, time_zone, cost, costPerMem,
+				arch, os, vmm, host, time_zone, costPerSec, costPerMem,
 				costPerStorage, costPerBw);
 
 		FogDevice fogdevice = null;
 		try {
 			fogdevice = new FogDevice(nodeName, characteristics, 
-					new AppModuleAllocationPolicy(hostList), storageList, 10, upBw, downBw, 0, ratePerMips);
+					new AppModuleAllocationPolicy(hostList), storageList, 10, upBw, downBw, 0, ratePerMips, costPerSec, costPerMem, costPerStorage, costPerBw);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -244,23 +254,22 @@ public class VRGameFog {
 		/*
 		 * Adding modules (vertices) to the application model (directed graph)
 		 */
-		application.addAppModule("client", 10); // adding module Client to the application model
-		application.addAppModule("concentration_calculator", 10); // adding module Concentration Calculator to the application model
-		application.addAppModule("connector", 10); // adding module Connector to the application model
-		
+		application.addAppModule("client", 1000, 10, 10000); // adding module Client to the application model
+		application.addAppModule("concentration_calculator", 1000, 10, 10000); // adding module Concentration Calculator to the application model
+		application.addAppModule("connector", 1000, 10, 10000); // adding module Connector to the application model
 		/*
 		 * Connecting the application modules (vertices) in the application model (directed graph) with edges
 		 */
 		if(EEG_TRANSMISSION_TIME==10)
-			application.addAppEdge("EEG", "client", 2000, 500, "EEG", Tuple.UP, AppEdge.SENSOR); // adding edge from EEG (sensor) to Client module carrying tuples of type EEG
+			application.addAppEdge("EEG", "client", 2000, 20, 500, "EEG", Tuple.UP, AppEdge.SENSOR); // adding edge from EEG (sensor) to Client module carrying tuples of type EEG
 		else
-			application.addAppEdge("EEG", "client", 3000, 500, "EEG", Tuple.UP, AppEdge.SENSOR);
-		application.addAppEdge("client", "concentration_calculator", 3500, 500, "_SENSOR", Tuple.UP, AppEdge.MODULE); // adding edge from Client to Concentration Calculator module carrying tuples of type _SENSOR
-		application.addAppEdge("concentration_calculator", "connector", 100, 1000, 1000, "PLAYER_GAME_STATE", Tuple.UP, AppEdge.MODULE); // adding periodic edge (period=1000ms) from Concentration Calculator to Connector module carrying tuples of type PLAYER_GAME_STATE
-		application.addAppEdge("concentration_calculator", "client", 14, 500, "CONCENTRATION", Tuple.DOWN, AppEdge.MODULE);  // adding edge from Concentration Calculator to Client module carrying tuples of type CONCENTRATION
-		application.addAppEdge("connector", "client", 100, 28, 1000, "GLOBAL_GAME_STATE", Tuple.DOWN, AppEdge.MODULE); // adding periodic edge (period=1000ms) from Connector to Client module carrying tuples of type GLOBAL_GAME_STATE
-		application.addAppEdge("client", "DISPLAY", 1000, 500, "SELF_STATE_UPDATE", Tuple.DOWN, AppEdge.ACTUATOR);  // adding edge from Client module to Display (actuator) carrying tuples of type SELF_STATE_UPDATE
-		application.addAppEdge("client", "DISPLAY", 1000, 500, "GLOBAL_STATE_UPDATE", Tuple.DOWN, AppEdge.ACTUATOR);  // adding edge from Client module to Display (actuator) carrying tuples of type GLOBAL_STATE_UPDATE
+			application.addAppEdge("EEG", "client", 3000, 20, 500, "EEG", Tuple.UP, AppEdge.SENSOR);
+		application.addAppEdge("client", "concentration_calculator", 3500, 20, 500, "_SENSOR", Tuple.UP, AppEdge.MODULE); // adding edge from Client to Concentration Calculator module carrying tuples of type _SENSOR
+		application.addAppEdge("concentration_calculator", "connector", 100, 1000, 20, 1000, "PLAYER_GAME_STATE", Tuple.UP, AppEdge.MODULE); // adding periodic edge (period=1000ms) from Concentration Calculator to Connector module carrying tuples of type PLAYER_GAME_STATE
+		application.addAppEdge("concentration_calculator", "client", 14, 20, 500, "CONCENTRATION", Tuple.DOWN, AppEdge.MODULE);  // adding edge from Concentration Calculator to Client module carrying tuples of type CONCENTRATION
+		application.addAppEdge("connector", "client", 100, 28, 20, 1000, "GLOBAL_GAME_STATE", Tuple.DOWN, AppEdge.MODULE); // adding periodic edge (period=1000ms) from Connector to Client module carrying tuples of type GLOBAL_GAME_STATE
+		application.addAppEdge("client", "DISPLAY", 1000, 20, 500, "SELF_STATE_UPDATE", Tuple.DOWN, AppEdge.ACTUATOR);  // adding edge from Client module to Display (actuator) carrying tuples of type SELF_STATE_UPDATE
+		application.addAppEdge("client", "DISPLAY", 1000, 20, 500, "GLOBAL_STATE_UPDATE", Tuple.DOWN, AppEdge.ACTUATOR);  // adding edge from Client module to Display (actuator) carrying tuples of type GLOBAL_STATE_UPDATE
 		
 		/*
 		 * Defining the input-output relationships (represented by selectivity) of the application modules. 
